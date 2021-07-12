@@ -1,0 +1,32 @@
+    for i in range(len(mosaic.tileTransforms)):
+        tilePosition = mosaic.tileTransforms[i]["tilePosition"]
+        tileBoundingBox = mosaic.tileTransforms[i]["tilePosition"]
+
+        if tileImageAnimationOffsetTexture == None:
+            gradientFrameOffset = (
+                tilePosition[0] + (mosaic.tiles[1] - tilePosition[1])) % tileImageFrameAmmount
+
+        else:
+            gradientFrameOffset = (GetAveragePixelColor(
+                tileImageAnimationOffsetTexture.convert("LA"),
+                mosaic.InputImageCoords(tileBoundingBox)
+            )[0] / 255) * tileImageFrameAmmount * animationOffsetStrength
+
+        frame = round(gradientFrameOffset +
+                      animationOffset) % tileImageFrameAmmount
+
+        color = GetAveragePixelColor(
+            inputImage, mosaic.InputImageCoords(tileBoundingBox),
+        )
+
+        solidColorTile = Image.new("RGBA", tileBoundingBox[-2:], color=color)
+
+        grayscaleTileImageTile = tileImageFrames[frame].convert(
+            "LA").convert("RGBA")
+
+        tile = ImageChops.multiply(
+            solidColorTile, grayscaleTileImageTile)
+
+        tile.putalpha(tileImageFrames[frame].split()[-1])
+
+        outputImage.paste(tile, tileBoundingBox[:2])
