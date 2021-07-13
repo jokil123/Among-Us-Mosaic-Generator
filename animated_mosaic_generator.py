@@ -1,10 +1,7 @@
-import argparse
 from PIL import Image, ImageStat, ImageChops, ImageSequence
 import math
 import frame_align
-import time
 import concurrent.futures
-import sys
 import launch_command_config
 
 
@@ -123,8 +120,6 @@ def CreateOffsetMosaic(mosaic, tileImageFrames, inputImage, animationOffsetStren
             tile.putalpha(tileImageFrames[frame].split()[-1])
 
             tileSplitImage.paste(tile, (0, tileBoundingBox[1]))
-
-        # tileSplitImage.show()
 
         splitImages.append(
             {"image": tileSplitImage, "position": tileBoundingBox[0]})
