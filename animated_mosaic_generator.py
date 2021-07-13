@@ -245,7 +245,7 @@ class AnimatedMosaicGenerator():
         SaveGif(self.frames, self.outputFramerate)
 
 
-if __name__ == "__main__":
+def main():
     args = launch_command_config.GetArguments()
 
     animatedMosaicGenerator = AnimatedMosaicGenerator(
@@ -263,3 +263,7 @@ if __name__ == "__main__":
     animatedMosaicGenerator.SetupMosaicGeneration()
     animatedMosaicGenerator.GenerateMosaicFrames()
     animatedMosaicGenerator.SaveMosaic()
+
+
+if __name__ == "__main__":
+    main()
