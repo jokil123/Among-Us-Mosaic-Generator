@@ -1,0 +1,49 @@
+def main():
+    inputTextureDir = "img/inputTexture.gif"
+    mosaicTextureDir = "img/mosaicTexture.gif"
+    mosaicOffsetTextureDir = "img/mosaicOffsetTexture.png"
+
+    inputTexture = LoadAnimationAsFrames(inputTextureDir)
+    mosaicTexture = LoadAnimationAsFrames(mosaicTextureDir)
+    mosaicOffsetTexture = LoadImageAsCopy(mosaicOffsetTextureDir)
+
+    startTime = time.time()
+
+    mosaic = Mosaic(25, mosaicTexture[0], inputTexture[0])
+
+    print("Mosaic generation: " + str(time.time() - startTime))
+    startTime = time.time()
+
+    animation1 = frame_align.Animation(len(inputTexture), 30)
+    animation2 = frame_align.Animation(len(mosaicTexture), 30)
+
+    alignedFrames = frame_align.AlignFrames(
+        animation1, animation2, 0.1, 10)
+
+    framesNumbers = alignedFrames["frames"]
+
+    print("Number of Frames: " + str(len(framesNumbers)))
+
+    print("FrameCombinations: " + str(time.time() - startTime))
+    startTime = time.time()
+
+    frames = []
+
+    for frame in framesNumbers:
+        frames.append(CreateOffsetMosaic(
+            mosaic, mosaicTexture, inputTexture[frame[0]], 1, frame[1]))
+
+        # print("finished frame " + str(len(frames) - 1) + "!")
+        print(".", end="")
+
+    print("\n")
+
+    print("Frame rendering: " + str(time.time() - startTime))
+    startTime = time.time()
+
+    SaveGif(frames, alignedFrames["framerate"])
+
+    print("Gif saving: " + str(time.time() - startTime))
+    startTime = time.time()
+
+    print("Output image size: " + str(frames[0].size))
