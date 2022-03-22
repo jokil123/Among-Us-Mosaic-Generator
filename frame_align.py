@@ -1,9 +1,15 @@
+from __future__ import annotations
 import math
 from decimal import Decimal
+from typing import TypedDict
 
+class searchResult(TypedDict):
+    gif1reps: int
+    gif2reps: int
+    difference: float
 
-def FindOptimalRepetitions(gif1Duration, gif2Duration, maxStretch, maxRepetitions) -> dict:
-    searchResults = []
+def FindOptimalRepetitions(gif1Duration: float, gif2Duration: float, maxStretch: float, maxRepetitions: int) -> searchResult:
+    searchResults: list[searchResult] = []
 
     for i in range(maxRepetitions):
         gif1Repetitions = i + 1
@@ -29,12 +35,12 @@ def FindOptimalRepetitions(gif1Duration, gif2Duration, maxStretch, maxRepetition
     return sortedSearchResults[0]
 
 
-def FindOptimalAnimationSettings(animation1, animation2):
+def FindOptimalAnimationSettings(animation1: Animation, animation2: Animation) -> tuple[int, float]:
     return max(animation1.frames * animation1.repetitions, animation2.frames * animation2.repetitions), max(animation1.framerate, animation2.framerate)
 
 
 class Animation:
-    def __init__(self, frames, framerate, repetitions=0) -> None:
+    def __init__(self, frames: int, framerate: float, repetitions: int =0) -> None:
         self.frames = frames
         self.framerate = framerate
         self.repetitions = repetitions
@@ -45,33 +51,36 @@ class Animation:
     def RepetitionFrames(self):
         return self.frames * self.repetitions
 
-    def SampleFrameAtTime(self, sampleTime):
+    def SampleFrameAtTime(self, sampleTime: float):
         framerateAdjustedSampleTime = sampleTime * self.framerate
 
         sampledFrame = math.floor(
             framerateAdjustedSampleTime) % self.frames
         return sampledFrame
 
+class AlignedConfig(TypedDict):
+    frames: list[tuple[int, int]]
+    framerate: float
 
-def AlignFrames(Animation1, Animation2, maxStretch, maxRepetitons) -> dict:
+def AlignFrames(animation1: Animation, animation2: Animation, maxStretch: float, maxRepetitons: int) -> AlignedConfig:
 
     optimalRepetitions = FindOptimalRepetitions(
-        Animation1.Duration(), Animation2.Duration(), maxStretch, maxRepetitons)
+        animation1.Duration(), animation2.Duration(), maxStretch, maxRepetitons)
 
     Animation1Loop = Animation(
-        Animation1.frames,
-        Animation1.framerate,
+        animation1.frames,
+        animation1.framerate,
         repetitions=optimalRepetitions["gif1reps"])
 
     Animation2Loop = Animation(
-        Animation2.frames,
-        Animation2.framerate * optimalRepetitions["difference"],
+        animation2.frames,
+        animation2.framerate * optimalRepetitions["difference"],
         repetitions=optimalRepetitions["gif2reps"])
 
     optimalFrames, optimalSamplerate = FindOptimalAnimationSettings(
         Animation1Loop, Animation2Loop)
 
-    frames = []
+    frames: list[tuple[int, int]] = []
 
     for frame in range(optimalFrames):
         time = frame / optimalSamplerate

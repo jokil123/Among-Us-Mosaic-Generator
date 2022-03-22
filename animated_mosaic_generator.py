@@ -1,17 +1,32 @@
+from typing import TypedDict, Union
 from PIL import Image, ImageStat, ImageChops, ImageSequence
 import math
 import frame_align
 import concurrent.futures
 import launch_command_config
+from recordclass import RecordClass
 
+class TileTransform(TypedDict):
+    tilePosition: tuple[int, int]
+    tileBoundingBox: tuple[int, int, int, int]
+
+class IntTuple2(RecordClass):
+    i0: int
+    i1: int
+
+class IntTuple4(RecordClass):
+    i0: int
+    i1: int
+    i2: int
+    i3: int
 
 class Mosaic:
-    tiles = [0, 0]
-    tileSize = [0, 0]
-    outputImageSize = [0, 0]
-    pixelRatio = 1
+    tiles = IntTuple2(0, 0)
+    tileSize = IntTuple2(0, 0)
+    outputImageSize = IntTuple2(0, 0)
+    pixelRatio: float = 1
 
-    def __init__(self, tileDensity, inputImage, tileImage):
+    def __init__(self, tileDensity: int, inputImage: Image.Image, tileImage: Image.Image):
         self.tiles[0] = tileDensity
         self.tileImage = tileImage
         self.inputImage = inputImage
@@ -23,30 +38,32 @@ class Mosaic:
         self.pixelRatio = self.outputImageSize[0] / self.inputImage.width
         self.outputImageSize[1] = self.inputImage.height * self.pixelRatio
         self.tiles[1] = math.floor(
-            self.outputImageSize[1] / self.tileImage.height)
-        bottomMargin = self.outputImageSize[1] % self.tileImage.height
-        verticalMargin = bottomMargin / self.tiles[1]
+            self.outputImageSize.i1 / self.tileImage.height)
+        bottomMargin: float = self.outputImageSize[1] % self.tileImage.height
+        verticalMargin: float = bottomMargin / self.tiles[1]
+
+        a = self.outputImageSize[0]
 
         self.tileSize[0] = self.tileImage.width
         self.tileSize[1] = math.floor(self.tileImage.height + verticalMargin)
 
-        self.outputImageSize[1] = math.ceil(self.outputImageSize[1])
+        self.outputImageSize[1] = math.ceil(self.outputImageSize.i1)
 
         self.tileTransforms = self.GetMosaicTileTransforms(
             self.tiles, self.tileSize)
 
-    def InputImageCoord(self, position):
+    def InputImageCoord(self, position: int) -> float:
         return position / self.pixelRatio
 
-    def InputImageCoords(self, positions):
-        inputImageCoords = []
+    def InputImageCoords(self, positions: list[int]):
+        inputImageCoords: list[float] = []
         for position in positions:
             inputImageCoords.append(self.InputImageCoord(position))
 
         return inputImageCoords
 
-    def GetMosaicTileTransforms(self, tiles, tileSize):
-        tileTransforms = []
+    def GetMosaicTileTransforms(self, tiles: tuple[int, int], tileSize: tuple[int, int]) -> list[TileTransform]:
+        tileTransforms: list[TileTransform] = []
 
         for xIndex in range(tiles[0]):
             for yIndex in range(tiles[1]):
@@ -69,21 +86,21 @@ class Mosaic:
         return tileTransforms
 
 
-def CreateOffsetMosaic(mosaic, tileImageFrames, inputImage, animationOffsetStrength, animationOffset, tileImageAnimationOffsetTexture=None):
+def CreateOffsetMosaic(mosaic: Mosaic, tileImageFrames: list[Image.Image], inputImage: Image.Image, animationOffsetStrength, animationOffset, tileImageAnimationOffsetTexture: Union[Image.Image, None]  =None):
     tileImageFrameAmmount = len(tileImageFrames)
 
     outputImage = Image.new("RGBA", mosaic.outputImageSize)
 
-    splits = []
+    splits: list[list[TileTransform]] = []
     splitImages = []
 
-    for i in range(mosaic.tiles[1]):
-        start = i * mosaic.tiles[1]
-        end = start + mosaic.tiles[1]
+    for i in range(mosaic.tiles.i1):
+        start: int = i * mosaic.tiles[1]
+        end: int = start + mosaic.tiles[1]
 
         splits.append(mosaic.tileTransforms[start:end])
 
-    def CreateSplit(threadId):
+    def CreateSplit(threadId: int):
         tileSplitImage = Image.new(
             "RGBA", (mosaic.tileSize[0], mosaic.outputImageSize[1]))
 
