@@ -1,4 +1,18 @@
 import argparse
+# from typing import TypedDict, Union
+
+
+# class Settings(TypedDict):
+#     inputImagePath: str
+#     tileImagePath: str
+#     outputImagePath: str
+#     animationOffsetImagePath: a
+#     tileResolution: int
+#     inputImageFramerate: Union[float, None]
+#     tileImageFramerate: Union[float, None]
+#     maxFramerateStretch: float
+#     maxRepetitions: int
+#     tileAnimationOffsetStrength: float
 
 
 def GetArguments():
