@@ -5,7 +5,7 @@ import math
 import frame_align
 import concurrent.futures
 import launch_command_config
-from recordclass import RecordClass
+from recordclass import RecordClass # type: ignore
 
 class TileTransform(TypedDict):
     tilePosition: IntTuple2
@@ -158,9 +158,9 @@ def CreateOffsetMosaic(mosaic: Mosaic, tileImageFrames: list[Image.Image], input
 
             tileSplitImage.paste(tile, (0, tileBoundingBox.i1))
 
-        
-        splitImages.append(
-        {"image": tileSplitImage, "position": tileBoundingBox.i0})
+
+            splitImages.append(
+            {"image": tileSplitImage, "position": tileBoundingBox.i0})
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=mosaic.tiles.i0) as executor:
         executor.map(CreateSplit, range(mosaic.tiles.i0))
@@ -175,7 +175,7 @@ def CreateOffsetMosaic(mosaic: Mosaic, tileImageFrames: list[Image.Image], input
 def GetAveragePixelColor(img: Image.Image, box: FloatTuple4) -> tuple[int, int, int, int]:
     cropArea = img.crop(box)
     imgStats: ImageStat.Stat = ImageStat.Stat(cropArea)
-    averageColor: list[float] = imgStats.mean
+    averageColor: list[float] = imgStats.mean # type: ignore
 
     roundedColor: list[int] = []
     for color in averageColor:
@@ -203,7 +203,7 @@ def LoadAnimationAsFrames(filepath: str):
     #     raise ValueError("Path is empty!")
     #     return None
 
-    sequence: list[Image.Image] = ImageSequence.all_frames(
+    sequence: list[Image.Image] = ImageSequence.all_frames( # type: ignore
         Image.open(filepath))
 
     convertedSequence: list[Image.Image] = []
